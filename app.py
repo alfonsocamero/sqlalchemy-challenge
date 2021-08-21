@@ -30,7 +30,6 @@ app = Flask(__name__)
 
 @app.route("/")
 def welcome():
-    """Here's a list of all available routes"""
     return (
         f"Welcome to the Hawaii vacation trip API!<br/>"
         f"Available Routes:<br/>"
@@ -46,7 +45,6 @@ def precipitation():
     #Create session
     session = Session(engine)
 
-    """Return a list of all dates and precipitation data"""
     # Query all dates and precipitation
     results = session.query(Measurement.date, Measurement.prcp).all()
 
@@ -67,7 +65,6 @@ def stations():
     #Create session
     session = Session(engine)
 
-    """Return a list of all stations names"""
     # Query all stations
     results = session.query(Station.station, Station.name).all()
 
