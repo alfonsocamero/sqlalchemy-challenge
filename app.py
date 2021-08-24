@@ -1,4 +1,5 @@
 import numpy as np
+import datetime as dt
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
@@ -110,51 +111,63 @@ def start_date(start):
     #Create session
     session = Session(engine)
 
+    date_range = Measurement.date
+    minimum = func.min(Measurement.tobs)
+    average = func.avg(Measurement.tobs)
+    maximum = func.max(Measurement.tobs)
+    
     #calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date
-    results = session.query(Measurement.date,func.min(Measurement.tobs),\
-         func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-             filter(Measurement.date >= start).all()
+    results = session.query(\
+                            func.min(Measurement.tobs),\
+                            func.avg(Measurement.tobs),\
+                            func.max(Measurement.tobs).\
+             filter(Measurement.date >= start)).all()
              
     session.close()
     
-#Create dictionary to hold info 
+    temps = list(np.ravel(results))
+    return jsonify(temps)
+    
+    #Create dictionary to hold info 
     start_info = []
-    for date, min, avg, max in results:
+    for date_range, minimum, average, maximum in results:
         start_dict = {}
-        start_dict["DATE"] = date
-        start_dict["TMIN"] = min
-        start_dict["TAVG"] = avg
-        start_dict["TMAX"] = max
+        start_dict["DATE"] = date_range
+        start_dict["TMIN"] = minimum
+        start_dict["TAVG"] = average
+        start_dict["TMAX"] = maximum
         start_info.append(start_dict)
 
     return jsonify(start_info)
 
 
-@app.route("/api/v1.0/<start>/<end>")
-def start_end_date(start, end):
+#@app.route("/api/v1.0/<start>/<end>")
+#def start_end_date(start, end):
     #Create session
-    session = Session(engine)
+    #session = Session(engine)
     
     #Calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive
-    results = session.query(func.min(Measurement.tobs),\
-         func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-             filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    #results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+       #filter(Measurement.date >= start).\
+       #filter(Measurement.date <= end).all()
+    # Unravel results into a 1D array and convert to a list
+    #temps = list(np.ravel(results))
+    #return jsonify(temps=temps)
 
-    session.close()        
+    #session.close()        
     
 #Create dictionary to hold info
-    start_end_info = []
+    #start_end_info = []
 
-    for min, avg, max in results:
-        start_end_dict = {}
-        start_end_dict["TMIN"] = min
-        start_end_dict["TAVG"] = avg
-        start_end_dict["TMAX "] = max
-        start_end_info.append(start_end_dict)
+    #for min, avg, max in results:
+        #start_end_dict = {}
+        #start_end_dict["TMIN"] = min
+        #start_end_dict["TAVG"] = avg
+        #start_end_dict["TMAX "] = max
+        #start_end_info.append(start_end_dict)
 
-    return jsonify(start_end_info)
-
+    #return jsonify(start_end_info)
+    
 if __name__ == "__main__":
     app.run(debug=True)
-
 
